@@ -1,6 +1,12 @@
 import numpy as np
 
 def convert_to_fixed_point(value, format_obj):
+    """
+    Convert a float value to fixed-point.
+
+    Scaling :
+        fixed = value * 2^b
+    """
     a = format_obj.a
     b = format_obj.b
     if(value == 0):
@@ -10,6 +16,9 @@ def convert_to_fixed_point(value, format_obj):
         return int(fixed_value)
 
 def convert_matrix_to_fixed_point(matrix, format_matrix):
+    """
+    Convert a float matrix to a fixed-point matrix.
+    """
     fixed_matrix = []
     for i in range(format_matrix.shape[0]):
         row = []
@@ -22,9 +31,18 @@ def convert_matrix_to_fixed_point(matrix, format_matrix):
     return np.array(fixed_matrix)
 
 def reconstruct_from_fixed_point(fixed_value, format_obj):
+    """
+    Reconstruct float value from fixed-point.
+
+    Reconstruction:
+        value = fixed / 2^b
+    """
     return fixed_value / (2**format_obj.b)
 
 def reconstruct_matrix_from_fixed_point(fixed_matrix, format_matrix):
+    """
+    Reconstruct float matrix from fixed-point matrix.
+    """
     reconstructed_matrix = []
     for i in range(format_matrix.shape[0]):
         row = []

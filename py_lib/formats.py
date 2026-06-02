@@ -1,6 +1,12 @@
 import numpy as np
 
 class Format:
+    """
+    Fixed-point format:
+        a = integer bits, including sign bit
+        b = fractional bits
+    """
+
     def __init__(self, a, b):
         self.a = a
         self.b = b
@@ -9,9 +15,13 @@ class Format:
         return "<" + str(self.a) + "," + str(self.b) + ">"
 
 def find_format(val, min_val, max_val, n_bits):
+    """
+    Find the smallest format able to represent val.end.
+    """
+
     x = val.end
     if(-1 < x < 1):
-        a = 0
+        a = 1
     elif(x > max_val or x < min_val):
         print(f"Value {x} is out of range for {n_bits} bits.")
         return []
@@ -24,6 +34,10 @@ def find_format(val, min_val, max_val, n_bits):
     return Format(int(a), int(b))
 
 def fill_format(matrix, n_bits):
+    """
+    Build a format matrix from an interval matrix.
+    """
+
     format_matrix = []
 
     min_val = -(2**(n_bits-1))
@@ -38,6 +52,10 @@ def fill_format(matrix, n_bits):
     return np.array(format_matrix, dtype=object)
 
 def find_max_format(format_matrix):
+    """
+    Find the largest format in the matrix.
+    """
+
     max_format = None
 
     for row in format_matrix:
@@ -48,6 +66,10 @@ def find_max_format(format_matrix):
     return max_format
 
 def convert_all_format(format_matrix, new_format):
+    """
+    Replace all formats with the same format.
+    """
+
     converted_format_matrix = []
     for row in format_matrix:
         converted_row = []
@@ -57,15 +79,32 @@ def convert_all_format(format_matrix, new_format):
     return np.array(converted_format_matrix)
 
 def reduce_format(f, n_bits):
+    """
+    Reduce fractional precision if total bits exceed n_bits.
+    """
+
     if(f.a + f.b > n_bits):
         f.b = n_bits - f.a
 
 def mul_format(f1, f2):
+    """
+    Fixed-point multiplication:
+        integer bits add
+        fractional bits add
+    """
+
     a = f1.a + f2.a
     b = f1.b + f2.b
     return Format(a, b)
 
 def add_format(f1, f2):
+    """
+    Fixed-point addition:
+        keep max integer/fractional bits
+    
+    +1 integer bit for carry/overflow
+    """
+
     a = max(f1.a, f2.a) + 1
     b = max(f1.b, f2.b)
     return Format(a, b)
