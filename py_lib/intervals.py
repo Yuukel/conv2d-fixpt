@@ -22,13 +22,13 @@ def create_interval_from_matrix(matrix):
 
     return intervals
 
-def interval_add(i1, i2):
+def add_interval(i1, i2):
     return (Interval)(i1.start + i2.start, i1.end + i2.end)
 
-def interval_sub(i1, i2):
+def sub_interval(i1, i2):
     return (Interval)(i1.start - i2.end, i1.end - i2.start)
 
-def interval_mul(i1, i2):
+def mul_interval(i1, i2):
     ac = i1.start * i2.start
     bc = i1.end * i2.start
     ad = i1.start * i2.end

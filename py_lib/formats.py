@@ -15,9 +15,10 @@ def find_format(val, min_val, max_val, n_bits):
     elif(x > max_val or x < min_val):
         print(f"Value {x} is out of range for {n_bits} bits.")
         return []
+    elif(x < 0):
+        a = np.ceil(np.log2(np.abs(x)))+1
     else:
-        a = np.floor(np.log2(np.abs(x)))+1
-    a += 1
+        a = np.floor(np.log2(x))+2
 
     b = n_bits - a
     return Format(int(a), int(b))
@@ -58,3 +59,13 @@ def convert_all_format(format_matrix, new_format):
 def reduce_format(f, n_bits):
     if(f.a + f.b > n_bits):
         f.b = n_bits - f.a
+
+def mul_format(f1, f2):
+    a = f1.a + f2.a
+    b = f1.b + f2.b
+    return Format(a, b)
+
+def add_format(f1, f2):
+    a = max(f1.a, f2.a) + 1
+    b = max(f1.b, f2.b)
+    return Format(a, b)

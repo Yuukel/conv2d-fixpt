@@ -3,7 +3,7 @@ import numpy as np
 from py_lib.config import N_BITS
 
 from py_lib.read import read_matrix_from_file, read_interval_matrix_from_file
-from py_lib.intervals import Interval, interval_add, interval_sub, interval_mul, create_interval_from_matrix
+from py_lib.intervals import Interval, add_interval, sub_interval, mul_interval, create_interval_from_matrix
 from py_lib.display import print_matrix
 from py_lib.formats import fill_format, find_format
 from py_lib.conversion import convert_matrix_to_fixed_point
@@ -37,6 +37,10 @@ M_fixed = convert_matrix_to_fixed_point(M, F)
 print("Matrix M (convertie en fixed-point):")
 print_matrix(M_fixed)
 
+K_fixed = convert_matrix_to_fixed_point(K, KF)
+print("Matrix K (convertie en fixed-point):")
+print_matrix(K_fixed)
+
 header = (
         f"{'Original':>15}"
         f"{'Format':>15}"
@@ -67,9 +71,9 @@ min_val = -(2**(N_BITS-1))
 max_val = 2**(N_BITS-1)-1
 print(find_format(A,min_val,max_val, N_BITS))
 print(find_format(B,min_val,max_val, N_BITS))
-print(interval_add(A,B))
-print(find_format(interval_add(A,B),min_val,max_val, N_BITS))
-print(interval_sub(A,B))
-print(find_format(interval_sub(A,B),min_val,max_val, N_BITS))
-print(interval_mul(A,B))
-print(find_format(interval_mul(A,B),min_val,max_val, N_BITS))
+print(add_interval(A,B))
+print(find_format(add_interval(A,B),min_val,max_val, N_BITS))
+print(sub_interval(A,B))
+print(find_format(sub_interval(A,B),min_val,max_val, N_BITS))
+print(mul_interval(A,B))
+print(find_format(mul_interval(A,B),min_val,max_val, N_BITS))
