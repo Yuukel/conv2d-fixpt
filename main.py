@@ -87,17 +87,17 @@ B = (Interval)(0.25, 0.75)
 min_val = -(2**(N_BITS-1))
 max_val = 2**(N_BITS-1)-1
 
-print(A)
-print(B)
+# print(A)
+# print(B)
 
-print(find_format(A,min_val,max_val, N_BITS))
-print(find_format(B,min_val,max_val, N_BITS))
+# print(find_format(A,min_val,max_val, N_BITS))
+# print(find_format(B,min_val,max_val, N_BITS))
 
-print(add_interval(A,B))
-print(find_format(add_interval(A,B),min_val,max_val, N_BITS))
+# print(add_interval(A,B))
+# print(find_format(add_interval(A,B),min_val,max_val, N_BITS))
 
-print(sub_interval(A,B))
-print(find_format(sub_interval(A,B),min_val,max_val, N_BITS))
+# print(sub_interval(A,B))
+# print(find_format(sub_interval(A,B),min_val,max_val, N_BITS))
 
-print(mul_interval(A,B))
-print(find_format(mul_interval(A,B),min_val,max_val, N_BITS))
+# print(mul_interval(A,B))
+# print(find_format(mul_interval(A,B),min_val,max_val, N_BITS))

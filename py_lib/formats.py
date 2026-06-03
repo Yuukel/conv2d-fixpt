@@ -19,14 +19,12 @@ def find_format(val, min_val, max_val, n_bits):
     Find the smallest format able to represent val.end.
     """
 
-    x = val.end
+    x = max(abs(val.start), abs(val.end))
     if(-1 < x < 1):
         a = 1
     elif(x > max_val or x < min_val):
         print(f"Value {x} is out of range for {n_bits} bits.")
         return []
-    elif(x < 0):
-        a = np.ceil(np.log2(np.abs(x)))+1
     else:
         a = np.floor(np.log2(x))+2
 
@@ -97,14 +95,14 @@ def mul_format(f1, f2):
     b = f1.b + f2.b
     return Format(a, b)
 
-def add_format(f1, f2):
+def add_format(f1, f2, n_bits):
     """
     Fixed-point addition:
         keep max integer/fractional bits
-    
+
     +1 integer bit for carry/overflow
     """
 
     a = max(f1.a, f2.a) + 1
-    b = max(f1.b, f2.b)
+    b = n_bits - a
     return Format(a, b)
