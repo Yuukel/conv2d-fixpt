@@ -3,11 +3,11 @@ import numpy as np
 from py_lib.config import N_BITS
 
 from py_lib.read import read_matrix_from_file, read_interval_matrix_from_file
-from py_lib.intervals import Interval, add_interval, sub_interval, mul_interval, create_interval_from_matrix
+from py_lib.intervals import Interval, add_interval, sub_interval, mul_interval, create_interval_from_matrix, find_global_interval
 from py_lib.display import print_matrix
-from py_lib.formats import fill_format, find_format
+from py_lib.formats import fill_format, find_format, find_max_format
 from py_lib.conversion import convert_matrix_to_fixed_point
-from py_lib.c_generator import generate_c_file
+from py_lib.c_generator import generate_c_file, generate_c_file_loop
 
 
 # Read input data
@@ -75,9 +75,24 @@ for i in range(M.shape[0]):
             f"{M_fixed[i][j]:>15}"
         )
 
+KH, KW = K.shape
+H, W = M.shape
+
+OUT_H = H - KH + 1
+OUT_W = W - KW + 1
+
+new_F = np.empty(K.shape, dtype=object)
+new_I = np.empty(K.shape, dtype=object)
+for i in range(KH):
+    for j in range(KW):
+        new_F[i][j] = find_max_format(F[i:i+OUT_H, j:j+OUT_W])
+        new_I[i][j] = find_global_interval(I[i:i+OUT_H, j:j+OUT_W])
+print_matrix(new_F)
+
 
 # Generate C source file
 generate_c_file(M, K, F, KF, I, KI, N_BITS)
+generate_c_file_loop(M, K_fixed, new_F, KF, new_I, KI, N_BITS)
 
 
 # Small interval arithmetic test

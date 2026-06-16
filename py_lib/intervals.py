@@ -36,6 +36,12 @@ def create_interval_from_matrix(matrix):
 
     return intervals
 
+def find_global_interval(intervals):
+    low = min(interval.start for row in intervals for interval in row)
+    high = max(interval.end for row in intervals for interval in row)
+
+    return Interval(low, high)
+
 def add_interval(i1, i2):
     """
     Interval addition:
