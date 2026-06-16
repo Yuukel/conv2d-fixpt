@@ -32,25 +32,14 @@ def generate_conv_pixel_c(M, K, F, KF, I, KI, n_bits):
 
     for i in range(K.shape[0]):
         for j in range(K.shape[1]):
-            print(f"Etape {i},{j} : {i*K.shape[1]+j+1}")
+            # print(f"Etape {i},{j} : {i*K.shape[1]+j+1}")
 
             # Load operands.
             code.append(f"""
-            printf("Etape {i},{j} : {i*K.shape[1]+j+1}\\n\\n");
             A = {convert_to_fixed_point(M[0+i][0+j], F[0+i][0+j])};
             B = {convert_to_fixed_point(K[0+i][0+j], KF[0+i][0+j])};
             C = R;
             """)
-
-            # Debug display
-            # code.append(f"""
-            # printf("A : ");
-            # print_binary(A, {n_bits});
-            # printf("B : ");
-            # print_binary(B, {n_bits});
-            # printf("C : ");
-            # print_binary(C, {n_bits});
-            # """)
 
             # Number of fractional bits of A and B
             f_bits_b = n_bits - F[0+i][0+j].a
@@ -72,11 +61,6 @@ def generate_conv_pixel_c(M, K, F, KF, I, KI, n_bits):
             # Multiply fixed-point values
             code.append(f"""
             tmp = fp{n_bits}_mul(A, B, {shift_tmp});
-
-            printf("TMP : ");
-            print_binary(tmp, {n_bits});
-
-            printf("\\n");
             """)
 
             # Align accumulator C to target format
@@ -86,32 +70,23 @@ def generate_conv_pixel_c(M, K, F, KF, I, KI, n_bits):
             if shift_c > 0:
                 code.append(f"""
                 C = C << {shift_c};
-                printf("C après shift : ");
-                print_binary(C, {n_bits});
-                printf("\\n");
                 """)
             elif shift_c < 0:
                 code.append(f"""
                 C = C >> {-shift_c};
-                printf("C après shift : ");
-                print_binary(C, {n_bits});
-                printf("\\n");
                 """)
 
             # Addition in n_bits
             code.append(f"""
             R = fp{n_bits}_add(C, tmp);
-            printf("R : ");
-            print_binary(R, {n_bits});
-            printf("\\n");
             """)
 
             # Update accumulator state
             C_format = interval_add_format
             C_interval = interval_add
 
-    print(f"Final C_format: {C_format}, "
-          f"Final C_interval: {C_interval}")
+    # print(f"Final C_format: {C_format}, "
+    #       f"Final C_interval: {C_interval}")
     current_b = C_format.b
     code.append(f"""
     current_b = {current_b};
