@@ -32,6 +32,7 @@ def generate_conv_pixel_c(M, K, F, KF, I, KI, n_bits):
 
     for i in range(K.shape[0]):
         for j in range(K.shape[1]):
+            # print(f"Etape {i},{j} : {i*K.shape[1]+j+1}")
 
             # Load operands.
             code.append(f"""
