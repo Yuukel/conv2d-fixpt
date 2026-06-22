@@ -1,6 +1,7 @@
 from pathlib import Path
 import numpy as np
 
+from py_lib.config import DEBUG
 from py_lib.intervals import Interval, add_interval, mul_interval
 from py_lib.formats import Format, find_format, mul_format, reduce_format, add_format
 from py_lib.conversion import convert_to_fixed_point
@@ -17,6 +18,27 @@ def generate_c_header():
 
     return "\n".join(code)
 
+def generate_c_save(rows, cols, filename):
+    return f"""
+    FILE *f = fopen("{filename}", "w");
+
+    if(f == NULL){{
+        perror("fopen");
+        return 1;
+    }}
+
+    for(int i = 0 ; i < {rows} ; i++){{
+        for(int j = 0 ; j < {cols} ; j++){{
+            fprintf(f, "%lf", OUT[i][j]);
+            if(j < {cols} - 1){{
+                fprintf(f, " ");
+            }}
+        }}
+        fprintf(f,"\\n");
+    }}
+    fclose(f);
+    """
+
 def generate_conv_pixel_c(M, K, F, KF, I, KI, n_bits):
     """
     Generate C code for one convolution pixel.
@@ -32,7 +54,6 @@ def generate_conv_pixel_c(M, K, F, KF, I, KI, n_bits):
 
     for i in range(K.shape[0]):
         for j in range(K.shape[1]):
-            # print(f"Etape {i},{j} : {i*K.shape[1]+j+1}")
 
             # Load operands.
             code.append(f"""
@@ -106,7 +127,7 @@ def generate_c_file(M, K, F, KF, I, KI, n_bits, output_path="gen/conv_pixel.c"):
     c_code = f"""{header_code}
 
     int main(){{
-        float OUT[{out_h}][{out_w}];
+        double OUT[{out_h}][{out_w}];
         fp{n_bits}_t OUT_fp[{out_h}][{out_w}];
         int current_b;
         size_t i = 0, j;
@@ -121,10 +142,11 @@ def generate_c_file(M, K, F, KF, I, KI, n_bits, output_path="gen/conv_pixel.c"):
             c_code += pixel_code
             c_code += f"""
             OUT_fp[{i}][{j}] = R;
-            OUT[{i}][{j}] = (float)R / (1 << current_b);
+            OUT[{i}][{j}] = (double)R / (1LL << current_b);
             R = 0;
             """
-
+    if(not DEBUG):
+        c_code += "/*"
     c_code += f"""
     // Final output (fixed_point) display
     printf("Output Matrix Fixed-Point:\\n");
@@ -141,11 +163,15 @@ def generate_c_file(M, K, F, KF, I, KI, n_bits, output_path="gen/conv_pixel.c"):
     printf("Output Matrix Float:\\n");
     for(i = 0; i < {out_h}; i++){{
         for(j = 0; j < {out_w}; j++){{
-            printf("%f ", OUT[i][j]);
+            printf("%lf ", OUT[i][j]);
         }}
         printf("\\n");
     }}
     """
+    if(not DEBUG):
+        c_code += "*/"
+
+    c_code += generate_c_save(out_h, out_w, "gen/matrices/prec_matrix.txt")
 
     c_code += "return 0;\n}"
 
@@ -231,28 +257,28 @@ def generate_c_file_loop(M, K, F, KF, I, KI, n_bits, output_path="gen/conv_pixel
 
     c_code = f"""{header_code}
 
-int main(){{
-    float OUT[{out_h}][{out_w}];
-    fp{n_bits}_t OUT_fp[{out_h}][{out_w}];
+    int main(){{
+        double OUT[{out_h}][{out_w}];
+        fp{n_bits}_t OUT_fp[{out_h}][{out_w}];
 
-    fp{n_bits}_t A, B, C, tmp, R;
+        fp{n_bits}_t A, B, C, tmp, R;
 
-    fp{n_bits}_t K_fixed[{k_h*k_w}] = {{
-        {", ".join(map(str, K_fixed))}
-    }};
+        fp{n_bits}_t K_fixed[{k_h*k_w}] = {{
+            {", ".join(map(str, K_fixed))}
+        }};
 
-    int shift_tmp[{k_h*k_w}] = {{
-        {", ".join(map(str, shift_tmp))}
-    }};
+        int shift_tmp[{k_h*k_w}] = {{
+            {", ".join(map(str, shift_tmp))}
+        }};
 
-    int shift_c[{k_h*k_w}] = {{
-        {", ".join(map(str, shift_c))}
-    }};
+        int shift_c[{k_h*k_w}] = {{
+            {", ".join(map(str, shift_c))}
+        }};
 
-    int current_b = {current_b};
+        int current_b = {current_b};
 
-    {c_2d_array("M_fixed", M_fixed, f"fp{n_bits}_t")}
-"""
+        {c_2d_array("M_fixed", M_fixed, f"fp{n_bits}_t")}
+    """
 
     c_code += f"""
     for(int y = 0 ; y < {out_h} ; y++){{
@@ -281,10 +307,13 @@ int main(){{
             }}
 
             OUT_fp[y][x] = R;
-            OUT[y][x] = (float)R / (1 << current_b);
+            OUT[y][x] = (double)R / (1LL << current_b);
         }}
     }}
-
+    """
+    if(not DEBUG):
+        c_code += "/*"
+    c_code += f"""
     printf("Output Matrix Fixed-Point:\\n");
     for(int i = 0; i < {out_h}; i++){{
         for(int j = 0; j < {out_w}; j++){{
@@ -296,11 +325,15 @@ int main(){{
     printf("Output Matrix Float:\\n");
     for(int i = 0; i < {out_h}; i++){{
         for(int j = 0; j < {out_w}; j++){{
-            printf("%f ", OUT[i][j]);
+            printf("%lf ", OUT[i][j]);
         }}
         printf("\\n");
     }}
     """
+    if(not DEBUG):
+        c_code += "*/"
+
+    c_code += generate_c_save(out_h, out_w, "gen/matrices/loop_matrix.txt")
 
     c_code += "return 0;\n}"
 
